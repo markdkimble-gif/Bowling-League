@@ -122,20 +122,19 @@ export default function Stats({ currentSeason: season, players: PLAYERS }) {
 
   /* ── This Season data ── */
   const seasonData = useMemo(() => {
-    const scores = getSeasonScores(season);
     const playerStats = PLAYERS.map((p) => {
+      const weeks = getPlayerWeekData(season, p.id);
       const games = [];
       const weekSeries = [];
       const triGames = { t1: [], t2: [], t3: [] };
-      for (let w = 1; w <= TOTAL_WEEKS; w++) {
-        const ws = scores[w]?.[p.id];
-        if (!ws) continue;
-        const g1 = toNum(ws.g1), g2 = toNum(ws.g2), g3 = toNum(ws.g3);
+      for (const w of weeks) {
+        const g1 = toNum(w.g1), g2 = toNum(w.g2), g3 = toNum(w.g3);
         if (g1) games.push(g1);
         if (g2) games.push(g2);
         if (g3) games.push(g3);
         if (g1 || g2 || g3) weekSeries.push(g1 + g2 + g3);
-        const tri = w <= TRIMESTER_WEEKS ? 't1' : w <= TRIMESTER_WEEKS * 2 ? 't2' : 't3';
+        const wk = w.week || 0;
+        const tri = wk <= TRIMESTER_WEEKS ? 't1' : wk <= TRIMESTER_WEEKS * 2 ? 't2' : 't3';
         [g1, g2, g3].filter((g) => g > 0).forEach((g) => triGames[tri].push(g));
       }
       const avg = calcAvg(games);
@@ -173,16 +172,10 @@ export default function Stats({ currentSeason: season, players: PLAYERS }) {
     // Best series
     let bestSeries = 0;
     let bestSeriesPlayer = null;
-    for (let w = 1; w <= TOTAL_WEEKS; w++) {
-      for (const p of PLAYERS) {
-        const ws = scores[w]?.[p.id];
-        if (ws) {
-          const s = toNum(ws.g1) + toNum(ws.g2) + toNum(ws.g3);
-          if (s > bestSeries) {
-            bestSeries = s;
-            bestSeriesPlayer = p;
-          }
-        }
+    for (const ps of playerStats) {
+      if (ps.highSeries > bestSeries) {
+        bestSeries = ps.highSeries;
+        bestSeriesPlayer = ps;
       }
     }
 
