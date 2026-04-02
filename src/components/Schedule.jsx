@@ -94,6 +94,7 @@ export default function Schedule({ currentSeason: season }) {
         <div className="glow" style={{ textAlign: 'center', marginBottom: 16 }}>
           Next Up: Week {nextUnplayed.week} ({nextUnplayed.date}) vs{' '}
           {nextUnplayed.opponent}
+          {nextUnplayed.lanes && <span style={{ color: '#999', fontSize: 14 }}> — Lanes {nextUnplayed.lanes}</span>}
         </div>
       )}
 
@@ -115,6 +116,7 @@ export default function Schedule({ currentSeason: season }) {
             <th>Wk</th>
             <th>Date</th>
             <th>Opponent</th>
+            <th>Lanes</th>
             <th>G1</th>
             <th>G2</th>
             <th>G3</th>
@@ -130,6 +132,7 @@ export default function Schedule({ currentSeason: season }) {
                 <td style={{ textAlign: 'center' }}>{w.week}</td>
                 <td style={{ textAlign: 'center' }}>{w.date}</td>
                 <td>{w.opponent}</td>
+                <td style={{ textAlign: 'center', fontSize: 12, color: '#999' }}>{w.lanes || ''}</td>
                 {renderResultCell(w.week, 'g1')}
                 {renderResultCell(w.week, 'g2')}
                 {renderResultCell(w.week, 'g3')}
@@ -150,7 +153,7 @@ export default function Schedule({ currentSeason: season }) {
         <tfoot>
           <tr>
             <td
-              colSpan={7}
+              colSpan={8}
               style={{ textAlign: 'right', fontWeight: 'bold', paddingRight: 8 }}
             >
               {TRIMESTERS[selectedTrimester]} Total:
