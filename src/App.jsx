@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { TEAM_NAME, SEASONS } from './data/constants';
+import usePlayers from './hooks/usePlayers';
 import Schedule from './components/Schedule';
 import Availability from './components/Availability';
 import Scores from './components/Scores';
@@ -7,6 +8,7 @@ import Stats from './components/Stats';
 import Standings from './components/Standings';
 import TrophyRoom from './components/TrophyRoom';
 import Import from './components/Import';
+import RosterEditor from './components/RosterEditor';
 import './App.css';
 
 const TABS = [
@@ -22,23 +24,25 @@ const TABS = [
 function App() {
   const [activeTab, setActiveTab] = useState('schedule');
   const [currentSeason, setCurrentSeason] = useState('2025/26');
+  const [showRoster, setShowRoster] = useState(false);
+  const { players, updatePlayer, addPlayer, removePlayer } = usePlayers();
 
   const renderTab = () => {
     switch (activeTab) {
       case 'schedule':
         return <Schedule currentSeason={currentSeason} />;
       case 'availability':
-        return <Availability currentSeason={currentSeason} />;
+        return <Availability currentSeason={currentSeason} players={players} />;
       case 'scores':
-        return <Scores currentSeason={currentSeason} />;
+        return <Scores currentSeason={currentSeason} players={players} />;
       case 'stats':
-        return <Stats currentSeason={currentSeason} />;
+        return <Stats currentSeason={currentSeason} players={players} />;
       case 'standings':
         return <Standings currentSeason={currentSeason} />;
       case 'trophy':
-        return <TrophyRoom currentSeason={currentSeason} />;
+        return <TrophyRoom />;
       case 'import':
-        return <Import currentSeason={currentSeason} />;
+        return <Import currentSeason={currentSeason} players={players} />;
       default:
         return <Schedule currentSeason={currentSeason} />;
     }
@@ -47,7 +51,20 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1 className="team-name">{TEAM_NAME}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <h1 className="team-name">{TEAM_NAME}</h1>
+          <button
+            onClick={() => setShowRoster(true)}
+            style={{
+              background: 'none', border: '1px solid #8a5a10',
+              borderRadius: 6, padding: '4px 10px', cursor: 'pointer',
+              color: '#e8a020', fontSize: 16, lineHeight: 1,
+            }}
+            title="Edit Roster"
+          >
+            👥
+          </button>
+        </div>
         <div className="season-selector">
           <label htmlFor="season-select">Season:</label>
           <select
@@ -80,6 +97,16 @@ function App() {
           </button>
         ))}
       </nav>
+
+      {showRoster && (
+        <RosterEditor
+          players={players}
+          onUpdate={updatePlayer}
+          onAdd={addPlayer}
+          onRemove={removePlayer}
+          onClose={() => setShowRoster(false)}
+        />
+      )}
     </div>
   );
 }

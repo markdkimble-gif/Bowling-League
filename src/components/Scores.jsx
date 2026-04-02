@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
-  PLAYERS,
   TOTAL_WEEKS,
   TRIMESTER_WEEKS,
   PTS_PER_GAME_WIN,
@@ -12,9 +11,9 @@ import { loadData, saveData, getScoresKey } from '../data/storage';
 const EMPTY_PLAYER_SCORES = { g1: '', g2: '', g3: '', hcp: '' };
 const EMPTY_OPPONENT = { g1: '', g2: '', g3: '' };
 
-function buildDefault() {
+function buildDefault(playerList) {
   const players = {};
-  PLAYERS.forEach((p) => {
+  playerList.forEach((p) => {
     players[p.id] = { ...EMPTY_PLAYER_SCORES };
   });
   return { players, opponent: { ...EMPTY_OPPONENT } };
@@ -25,10 +24,10 @@ function toNum(v) {
   return Number.isFinite(n) ? n : 0;
 }
 
-export default function Scores({ currentSeason: season }) {
+export default function Scores({ currentSeason: season, players: PLAYERS }) {
   const [weekNum, setWeekNum] = useState(1);
   const [data, setData] = useState(() =>
-    loadData(getScoresKey(season, 1), buildDefault())
+    loadData(getScoresKey(season, 1), buildDefault(PLAYERS))
   );
 
   const schedule = useMemo(() => generateSchedule(season), [season]);
@@ -48,7 +47,7 @@ export default function Scores({ currentSeason: season }) {
 
   // Reload data when season or week changes
   useEffect(() => {
-    const loaded = loadData(getScoresKey(season, weekNum), buildDefault());
+    const loaded = loadData(getScoresKey(season, weekNum), buildDefault(PLAYERS));
     // Ensure all players exist in loaded data
     const players = { ...loaded.players };
     PLAYERS.forEach((p) => {

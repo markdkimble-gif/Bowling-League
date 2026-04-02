@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { PLAYERS, TOTAL_WEEKS, TRIMESTER_WEEKS } from '../data/constants';
+import { TOTAL_WEEKS, TRIMESTER_WEEKS } from '../data/constants';
 import { loadData, saveData, getAvailabilityKey } from '../data/storage';
 
 const STATUS_CYCLE = ['green', 'yellow', 'red'];
@@ -16,9 +16,9 @@ const STATUS_LABELS = {
 
 const weeks = Array.from({ length: TOTAL_WEEKS }, (_, i) => i + 1);
 
-function buildDefault() {
+function buildDefault(players) {
   const data = {};
-  for (const player of PLAYERS) {
+  for (const player of players) {
     data[player.id] = {};
     for (let w = 1; w <= TOTAL_WEEKS; w++) {
       data[player.id][w] = 'green';
@@ -27,13 +27,13 @@ function buildDefault() {
   return data;
 }
 
-function Availability({ currentSeason: season }) {
+function Availability({ currentSeason: season, players }) {
   const storageKey = getAvailabilityKey(season);
 
   const [availability, setAvailability] = useState(() => {
     const saved = loadData(storageKey);
     if (saved) return saved;
-    const def = buildDefault();
+    const def = buildDefault(players);
     saveData(storageKey, def);
     return def;
   });
@@ -192,7 +192,7 @@ function Availability({ currentSeason: season }) {
             </tr>
           </thead>
           <tbody>
-            {PLAYERS.map((player) => (
+            {players.map((player) => (
               <tr key={player.id}>
                 <td className="avail-player-cell">
                   <span className="avatar">{player.avatar}</span>
