@@ -1,0 +1,218 @@
+/* ── Marquee ─────────────────────────────────────── */
+.marquee-container {
+  overflow: hidden;
+  background: linear-gradient(90deg, #1a0e00, #3b1f00, #1a0e00);
+  border: 2px solid #c8952e;
+  border-radius: 8px;
+  padding: 10px 0;
+  margin-bottom: 24px;
+}
+
+.marquee-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee-scroll 15s linear infinite;
+  font-family: 'Bowlby One', 'Impact', sans-serif;
+  font-size: 1.3rem;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* ── Section titles ──────────────────────────────── */
+.trophy-section-title {
+  font-family: 'Bowlby One', 'Impact', sans-serif;
+  color: #ffd700;
+  text-align: center;
+  font-size: 1.5rem;
+  margin: 32px 0 16px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+/* ── Banner grid ─────────────────────────────────── */
+.banner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.banner {
+  background: linear-gradient(135deg, #3b2a10, #6b4c1e, #3b2a10) !important;
+  border: 2px solid #c8952e !important;
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.banner:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(200, 149, 46, 0.35);
+}
+
+.trophy-emoji {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+.glow {
+  text-shadow:
+    0 0 10px #ffd700,
+    0 0 20px #ffa500,
+    0 0 40px #ff8c00;
+}
+
+.banner-title {
+  font-family: 'Bowlby One', 'Impact', sans-serif;
+  color: #ffd700;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.banner-subtitle {
+  color: #cba64f;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* ── Manager cards ───────────────────────────────── */
+.manager-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.manager-card {
+  background: #2a1a0a !important;
+  border: 2px solid #c8952e !important;
+  border-radius: 12px;
+  padding: 20px 16px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.manager-card:hover {
+  transform: scale(1.04);
+}
+
+.manager-year {
+  font-family: 'Bowlby One', 'Impact', sans-serif;
+  color: #ffd700;
+  font-size: 1rem;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.manager-badge {
+  font-size: 2rem;
+  margin-bottom: 4px;
+}
+
+.manager-name {
+  color: #e8d5b0;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.manager-stars {
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+}
+
+.star-filled {
+  color: #ffd700;
+}
+
+.star-empty {
+  color: #5a4520;
+}
+
+/* ── Records section ─────────────────────────────── */
+.records-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.record-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: linear-gradient(90deg, #1f1208, #2e1c0e) !important;
+  border: 1px solid #6b4c1e !important;
+  border-radius: 8px;
+  padding: 14px 18px;
+  transition: border-color 0.2s;
+}
+
+.record-row:hover {
+  border-color: #ffd700 !important;
+}
+
+.record-label {
+  color: #cba64f;
+  font-size: 0.95rem;
+  font-weight: 600;
+  min-width: 180px;
+}
+
+.record-value {
+  font-family: 'Bowlby One', 'Impact', sans-serif;
+  color: #ffd700;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
+  min-width: 80px;
+  text-align: center;
+}
+
+.record-detail {
+  color: #8a7550;
+  font-size: 0.8rem;
+  font-style: italic;
+  min-width: 140px;
+  text-align: right;
+}
+
+/* ── Trophy room wrapper ─────────────────────────── */
+.trophy-room {
+  padding: 8px 0;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 600px) {
+  .banner-grid,
+  .manager-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .record-row {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .record-label,
+  .record-detail {
+    text-align: center;
+    min-width: unset;
+  }
+}
