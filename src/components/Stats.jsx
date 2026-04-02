@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import {
-  PLAYERS,
   SEASONS,
   TRIMESTERS,
   TOTAL_WEEKS,
@@ -117,7 +116,7 @@ function barStyle(value, max, color = '#e8a020') {
    Main Component
    ═══════════════════════════════════════════════════════════ */
 
-export default function Stats({ currentSeason: season }) {
+export default function Stats({ currentSeason: season, players: PLAYERS }) {
   const [subTab, setSubTab] = useState(0);
   const [selectedPlayer, setSelectedPlayer] = useState(1);
 

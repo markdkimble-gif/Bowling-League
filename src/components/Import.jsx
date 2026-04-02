@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useCallback } from 'react';
-import { PLAYERS, TOTAL_WEEKS, SEASONS } from '../data/constants';
+import { TOTAL_WEEKS, SEASONS } from '../data/constants';
 import { loadData, saveData, getImportKey } from '../data/storage';
 
 function toNum(v) {
@@ -21,7 +21,7 @@ function calcHighScratch(row) {
 
 const MODES = ['Manual Entry', 'Paste from Site', 'Upload File'];
 
-export default function Import({ currentSeason: season }) {
+export default function Import({ currentSeason: season, players: PLAYERS }) {
   const [mode, setMode] = useState(MODES[0]);
   const [selectedSeason, setSelectedSeason] = useState(season || SEASONS[SEASONS.length - 1]);
   const [message, setMessage] = useState(null); // { type: 'success'|'error', text }
