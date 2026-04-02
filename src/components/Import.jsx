@@ -137,30 +137,47 @@ export default function Import({ currentSeason: season, players: PLAYERS }) {
       const result = {};
 
       for (const line of lines) {
-        // Try tab-separated first, then multiple spaces
-        let parts = line.split('\t').map((s) => s.trim());
+        // Skip known non-data lines
+        const trimmed = line.trim();
+        if (/^(league|page|bowler|team|\s*$)/i.test(trimmed)) continue;
+        if (/^[-=]+$/.test(trimmed)) continue;
+
+        // Try tab-separated first, then multiple spaces, then single spaces
+        let parts = line.split('\t').map((s) => s.trim()).filter(Boolean);
         if (parts.length < 4) {
-          parts = line.split(/\s{2,}/).map((s) => s.trim());
+          parts = line.split(/\s{2,}/).map((s) => s.trim()).filter(Boolean);
         }
         if (parts.length < 4) {
-          parts = line.split(/\s+/).map((s) => s.trim());
+          parts = line.split(/\s+/).map((s) => s.trim()).filter(Boolean);
         }
 
-        // Skip header-like rows
+        // Skip header-like rows (Week, Date, Gm1, etc.)
         if (parts[0] && isNaN(parseInt(parts[0], 10))) continue;
 
         const weekNum = toNum(parts[0]);
         if (weekNum < 1 || weekNum > TOTAL_WEEKS) continue;
 
-        const dateVal = parts[1] || '';
-        const g1 = toNum(parts[2]);
-        const g2 = toNum(parts[3]);
-        const g3 = toNum(parts[4]);
-        const series = parts[5] !== undefined ? toNum(parts[5]) : g1 + g2 + g3;
-        const hcp = toNum(parts[6]);
-        const hs = toNum(parts[7]) || Math.max(g1, g2, g3);
-        const avgBefore = toNum(parts[8]);
-        const avgAfter = toNum(parts[9]);
+        // Detect if field[1] is a date (contains / or -) or a score
+        let dateVal = '';
+        let scoreStart = 1;
+        if (parts[1] && /[\/\-]/.test(parts[1])) {
+          dateVal = parts[1];
+          scoreStart = 2;
+        }
+
+        const g1 = toNum(parts[scoreStart]);
+        const g2 = toNum(parts[scoreStart + 1]);
+        const g3 = toNum(parts[scoreStart + 2]);
+        const series = parts[scoreStart + 3] !== undefined ? toNum(parts[scoreStart + 3]) : g1 + g2 + g3;
+        const hcp = toNum(parts[scoreStart + 4]);
+        const hs = toNum(parts[scoreStart + 5]) || Math.max(g1, g2, g3);
+        // League Secretary format: Avg Before, Avg After (or Avg Today)
+        const avgBefore = toNum(parts[scoreStart + 6]);
+        // "Avg After" could be in column 8 or 9 depending on format
+        // Some PDFs have: AvgBefore, AvgAfter, AvgToday, +/-
+        const avgAfter = toNum(parts[scoreStart + 7]) || toNum(parts[scoreStart + 8]);
+
+        if (g1 === 0 && g2 === 0 && g3 === 0) continue; // skip empty/summary rows
 
         result[weekNum] = { date: dateVal, g1, g2, g3, series, hcp, hs, avgBefore, avgAfter };
       }
@@ -193,13 +210,21 @@ export default function Import({ currentSeason: season, players: PLAYERS }) {
   const parseFile = useCallback((file) => {
     if (!file) return;
     setUploadFileName(file.name);
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    // PDF files can't be parsed as text - direct user to Paste mode
+    if (ext === 'pdf') {
+      showMessage('error', 'PDF files cannot be parsed directly. Open the PDF, select all the data rows, copy them, then use the "Paste from Site" tab to import.');
+      setParsedUploadData(null);
+      return;
+    }
+
     const reader = new FileReader();
 
     reader.onload = (e) => {
       const text = e.target.result;
       try {
         let result = {};
-        const ext = file.name.split('.').pop().toLowerCase();
 
         if (ext === 'json') {
           const arr = JSON.parse(text);
@@ -208,14 +233,14 @@ export default function Import({ currentSeason: season, players: PLAYERS }) {
             const weekNum = toNum(row.Week || row.week || idx + 1);
             result[weekNum] = {
               date: row.Date || row.date || '',
-              g1: toNum(row.G1 || row.g1),
-              g2: toNum(row.G2 || row.g2),
-              g3: toNum(row.G3 || row.g3),
-              series: toNum(row.Series || row.series) || (toNum(row.G1 || row.g1) + toNum(row.G2 || row.g2) + toNum(row.G3 || row.g3)),
-              hcp: toNum(row.HCP || row.hcp),
-              hs: toNum(row.HS || row.hs) || Math.max(toNum(row.G1 || row.g1), toNum(row.G2 || row.g2), toNum(row.G3 || row.g3)),
-              avgBefore: toNum(row.AvgBefore || row.avgBefore),
-              avgAfter: toNum(row.AvgAfter || row.avgAfter),
+              g1: toNum(row.G1 || row.g1 || row.Gm1),
+              g2: toNum(row.G2 || row.g2 || row.Gm2),
+              g3: toNum(row.G3 || row.g3 || row.Gm3),
+              series: toNum(row.Series || row.series || row.SS) || (toNum(row.G1 || row.g1 || row.Gm1) + toNum(row.G2 || row.g2 || row.Gm2) + toNum(row.G3 || row.g3 || row.Gm3)),
+              hcp: toNum(row.HCP || row.hcp || row.HCF),
+              hs: toNum(row.HS || row.hs) || Math.max(toNum(row.G1 || row.g1 || row.Gm1), toNum(row.G2 || row.g2 || row.Gm2), toNum(row.G3 || row.g3 || row.Gm3)),
+              avgBefore: toNum(row.AvgBefore || row.avgBefore || row['Avg Before'] || row['Avg Befo']),
+              avgAfter: toNum(row.AvgAfter || row.avgAfter || row['Avg After'] || row['Avg Today'] || row['Avg Toda']),
             };
           });
         } else {
@@ -245,7 +270,7 @@ export default function Import({ currentSeason: season, players: PLAYERS }) {
         }
 
         if (Object.keys(result).length === 0) {
-          showMessage('error', 'No valid data found in file.');
+          showMessage('error', 'No valid data found in file. For PDF files, use the "Paste from Site" tab instead.');
           return;
         }
 
@@ -543,15 +568,18 @@ export default function Import({ currentSeason: season, players: PLAYERS }) {
             </div>
 
             <div style={{ marginBottom: 8, fontSize: 13, color: 'var(--text)' }}>
-              Paste tab-separated or space-separated data. Expected columns:
-              <strong> Week | Date | G1 | G2 | G3 | Series | HCP | HS | AvgBefore | AvgAfter</strong>
+              Open your League Secretary PDF, select all the data rows, copy, and paste below.
+              <br />
+              Expected columns: <strong>Week | Date | Gm1 | Gm2 | Gm3 | SS | HCP | HS | Avg Before | Avg After</strong>
+              <br />
+              <span style={{ color: 'var(--accent)', fontSize: 12 }}>Tip: This is the best way to import from League Secretary PDFs!</span>
             </div>
 
             <textarea
               value={pasteText}
               onChange={(e) => setPasteText(e.target.value)}
               placeholder={
-                'Example:\n1\t09/06\t185\t200\t175\t560\t15\t200\t178\t180\n2\t09/13\t192\t188\t210\t590\t15\t210\t180\t183'
+                'Paste from League Secretary PDF:\n28  03/25/2025  161  174  159  494  40  614  155  156  164  9\n25  03/04/2025  147  231  176  554  44  686  151  155  184  33'
               }
               style={{
                 width: '100%', minHeight: 160, padding: 12, borderRadius: 6,
@@ -629,12 +657,12 @@ export default function Import({ currentSeason: season, players: PLAYERS }) {
                 {uploadFileName || 'Drop a file here or click to upload'}
               </div>
               <div className="upload-hint" style={{ fontSize: 13, color: 'var(--text)' }}>
-                Accepts .csv, .txt, .json files
+                Accepts .csv, .txt, .json files (for PDFs, use "Paste from Site")
               </div>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".csv,.txt,.json"
+                accept=".csv,.txt,.json,.pdf"
                 onChange={handleFileChange}
                 style={{ display: 'none' }}
               />
